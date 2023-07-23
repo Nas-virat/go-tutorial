@@ -35,9 +35,9 @@ func Debug(message string,fields ...zap.Field){
 func Error(message interface{},fields ...zap.Field){
 	// check type of message
 	switch v := message.(type){
-	case error:
+	case error: // error type
 		log.Error(v.Error(), fields...)
-	case string:
+	case string: // string type
 		log.Error(v, fields...)
 	}
 

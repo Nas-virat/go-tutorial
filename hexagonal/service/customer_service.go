@@ -19,7 +19,7 @@ func (s customerService) GetCustomers() ([]CustomerResponse, error) {
 	customers, err := s.customerRepo.GetAll()
 	if err != nil {
 		logs.Error(err)
-		return nil, err
+		return nil, errs.NewUnexpectedError()
 	}
 
 	custResponses := []CustomerResponse{}
