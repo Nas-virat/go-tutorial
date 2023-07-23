@@ -1,7 +1,12 @@
 # go-tutorial
 
+This Repo is my study on Golang Basic from CodeBangkok 
 
-# Go Programming Language
+- gobasic folder is a basic syntax on golang 
+- database folder is a tutorial on connecting database using golang
+- hexagonal folder is a basic introduction on Golang hexagonal architecture
+
+## Go Programming Language
 Go Programming Playlist https://youtube.com/playlist?list=PLyZTXfAT27ib7T9Eg3qhvDE5rgvjQk4OL
 
 ### Website
