@@ -11,14 +11,36 @@ func NewAccountService(accRepo repository.AccountRepository) AccountService{
 }
 
 
-func (s accountService) NewAccount(CustomerID int, NewAccountRequest) (*AccountResponse, error){
+func (s accountService) NewAccount(customerID int,request NewAccountRequest) (*AccountResponse, error){
 
 	// validate the request
-	s.accRepo.Create(acc)
-	return nil,nil
+	account := repository.Account{
+		CustomerID: customerID,
+		OpeningDate: time.Now().Format("2006-1-2 15:04:05"),
+		AccountType: request.AccountType,
+		Amount: request.Amount,
+		Status: 1,
+	}
+	
+	newAcc, err := s.accRepo.Create(account)
+	if err != nil{
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+
+	// create response for send to client side
+	response := AccountResponse{
+		AccountID:   newAcc.AccountID,
+		OpeningDate: newAcc.OpeningDate,
+		AccountType: newAcc.AccountType,
+		Amount:      newAcc.Amount,
+		Status:      newAcc.Status,
+	}
+
+	return &response,nil
 }
 
-func (s accountService) GetAccounts(CustomerID int) ([]AccountResponse, error){
+func (s accountService) GetAccounts(customerID int) ([]AccountResponse, error){
 	accounts, err := s.accRepo.GetAll(CustomerID)
 	if err != nil {
 		logs.Error(err)
