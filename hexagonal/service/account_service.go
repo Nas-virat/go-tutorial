@@ -1,6 +1,11 @@
 package service
 
-import "bank/repository"
+import (
+	"bank/errs"
+	"bank/logs"
+	"bank/repository"
+	"time"
+)
 
 type accountService struct{
 	accRepo repository.AccountRepository
@@ -41,7 +46,7 @@ func (s accountService) NewAccount(customerID int,request NewAccountRequest) (*A
 }
 
 func (s accountService) GetAccounts(customerID int) ([]AccountResponse, error){
-	accounts, err := s.accRepo.GetAll(CustomerID)
+	accounts, err := s.accRepo.GetAll(customerID)
 	if err != nil {
 		logs.Error(err)
 		return nil, errs.NewUnexpectedError()
