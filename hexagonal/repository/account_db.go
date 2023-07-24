@@ -2,6 +2,7 @@ package repository
 
 import "github.com/jmoiron/sqlx"
 
+//adapter pattern
 type accountRepositoryDB struct {
 	db *sqlx.DB
 }
@@ -25,6 +26,8 @@ func (r accountRepositoryDB) Create(acc Account) (*Account, error) {
 		return nil, err
 	}
 
+	// check if the account is created
+	// by check last insert id
 	id, err := result.LastInsertId()
 	if err != nil {
 		return nil, err

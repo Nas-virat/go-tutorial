@@ -9,7 +9,6 @@ type Account struct {
 	Status      int     `db:"status"`
 }
 
-//go:generate mockgen -destination=../mock/mock_repository/mock_account_repository.go bank/repository AccountRepository
 type AccountRepository interface {
 	Create(Account) (*Account, error)
 	GetAll(int) ([]Account, error)
