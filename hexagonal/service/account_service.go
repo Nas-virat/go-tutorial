@@ -19,6 +19,15 @@ func NewAccountService(accRepo repository.AccountRepository) AccountService{
 func (s accountService) NewAccount(customerID int,request NewAccountRequest) (*AccountResponse, error){
 
 	// validate the request
+	if request.Amount < 5000 {
+		return nil, errs.NewVaildationError("to open a new account you need to deposit at least 5,000")
+	}
+
+	
+	if string.ToLower(request.AccountType) != "saving" && string.ToLower(request.AccountType) != "checking"{
+		return nil, errs.NewVaildationError("account type should be checking or saving")
+	}
+
 	account := repository.Account{
 		CustomerID: customerID,
 		OpeningDate: time.Now().Format("2006-1-2 15:04:05"),

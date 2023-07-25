@@ -31,3 +31,10 @@ func NewUnexpectedError() error{
 		Message: "unexcepted error",
 	}
 }
+
+func NewVaildationError(message string) error{
+	return AppError{
+		Code: http.StatusUnprocessableEntity,
+		Message: message,
+	}
+}
