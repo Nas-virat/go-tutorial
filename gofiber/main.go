@@ -112,28 +112,34 @@ func main() {
 	//Group
 	// test by
 	// curl localhost:8000/v1/hello
-	v1 := app.Group("v1", func(c *fiber.Ctx) error{
+	v1 := app.Group("v1", func(c *fiber.Ctx) error {
 		c.Set("Version", "v1")
 		return c.Next()
 	})
 
-
-	v1.Get("/hello",func(c *fiber.Ctx) error {
+	v1.Get("/hello", func(c *fiber.Ctx) error {
 		return c.SendString("Hello v1")
 	})
 
 	// test by
 	// curl localhost:8000/v2/hello
-	v2 := app.Group("v2", func(c *fiber.Ctx) error{
+	v2 := app.Group("v2", func(c *fiber.Ctx) error {
 		c.Set("Version", "v1")
 		return c.Next()
 	})
-	v2.Get("/hello",func(c *fiber.Ctx) error {
+	v2.Get("/hello", func(c *fiber.Ctx) error {
 		return c.SendString("Hello v1")
 	})
 
 	//Mount
-	
+	//similar to group separate from app config
+	//test by
+	userApp := fiber.New()
+	userApp.Get("/login", func(c *fiber.Ctx) error {
+		return c.SendString("Login")
+	})
+
+	app.Mount("/user", userApp)
 
 	app.Listen(":8000")
 }
