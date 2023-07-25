@@ -4,6 +4,7 @@ import (
 	"bank/errs"
 	"bank/logs"
 	"bank/repository"
+	"strings"
 	"time"
 )
 
@@ -24,7 +25,7 @@ func (s accountService) NewAccount(customerID int,request NewAccountRequest) (*A
 	}
 
 	
-	if string.ToLower(request.AccountType) != "saving" && string.ToLower(request.AccountType) != "checking"{
+	if strings.ToLower(request.AccountType) != "saving" && strings.ToLower(request.AccountType) != "checking"{
 		return nil, errs.NewVaildationError("account type should be checking or saving")
 	}
 

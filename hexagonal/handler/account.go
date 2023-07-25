@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bank/errs"
 	"bank/service"
 	"encoding/json"
 	"net/http"
