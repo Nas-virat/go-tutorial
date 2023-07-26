@@ -10,9 +10,90 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	_ "github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
+	"golang.org/x/crypto/bcrypt"
 )
 
+var db *sqlx.DB
+
 func main() {
+
+	var err error
+	db, err = sqlx.Open("mysql", "root:password@tcp(127.0.0.1:3306)/godb?parseTime=true")
+
+	if err != nil {
+		panic(err)
+	}
+
+	app := fiber.New()
+
+	app.Post("/signup", Signup)
+	app.Post("login", Login)
+	app.Get("/hello", Hello)
+	app.Listen(":8000")
+}
+
+func Signup(c *fiber.Ctx) error {
+	request := SignupRequest{}
+	err := c.BodyParser(&request)
+	if err != nil {
+		return err
+	}
+
+	if request.Username == "" || request.Password == "" {
+		return fiber.ErrUnprocessableEntity
+	}
+
+	password, err := bcrypt.GenerateFromPassword([]byte(request.Password), 10)
+	if err != nil {
+		return fiber.NewError(fiber.StatusUnprocessableEntity, err.Error())
+	}
+
+	query := "insert user (username, password) values (?,?)"
+	result, err := db.Exec(query, request.Username, password)
+	if err != nil {
+		return fiber.NewError(fiber.StatusUnprocessableEntity, err.Error())
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return fiber.NewError(fiber.StatusUnprocessableEntity, err.Error())
+	}
+
+	user := User{
+		Id:       int(id),
+		Username: request.Username,
+		Password: string(password),
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(user)
+}
+
+func Login(c *fiber.Ctx) error {
+	return nil
+}
+
+func Hello(c *fiber.Ctx) error {
+	return c.SendString("Hello World")
+}
+
+type User struct {
+	Id       int    `db:"id" json:"id"`
+	Username string `db:"username" json:"username"`
+	Password string `db:"password" json:"password"`
+}
+
+type SignupRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func Fiber() {
 	app := fiber.New(fiber.Config{
 		Prefork: true,
 	})
@@ -140,6 +221,60 @@ func main() {
 	})
 
 	app.Mount("/user", userApp)
+
+	//Server
+	app.Server().MaxConnsPerIP = 1
+	app.Get("/server", func(c *fiber.Ctx) error {
+		time.Sleep(time.Second * 30)
+		return c.SendString("server")
+	})
+
+	//test by
+	// curl localhost:8000/env | jq
+	app.Get("/env", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"BaseURL":     c.BaseURL(),
+			"Hostname":    c.Hostname(),
+			"IP":          c.IP(),
+			"IPs":         c.IPs(),
+			"OriginalURL": c.OriginalURL(),
+			"Path":        c.Path(),
+			"Protocol":    c.Protocol(),
+			"Subdomains":  c.Subdomains(),
+		})
+	})
+
+	//Body
+	//curl localhost:8000/body -d 'hello'
+	//curl localhost:8000/body -d '{"id":1,"name":"bond"}' -H content-type:application/json
+	app.Post("/body", func(c *fiber.Ctx) error {
+		fmt.Printf("Is Json:%v\n", c.Is("json")) // check is body json
+		fmt.Println(string(c.Body()))
+
+		person := Person{}
+		err := c.BodyParser(&person)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(person)
+		return nil
+	})
+
+	app.Post("/body2", func(c *fiber.Ctx) error {
+		fmt.Printf("Is Json:%v\n", c.Is("json")) // check is body json
+		fmt.Println(string(c.Body()))
+
+		// interface{} is similar to object
+		data := map[string]interface{}{}
+		err := c.BodyParser(&data)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(data)
+		return nil
+	})
 
 	app.Listen(":8000")
 }
