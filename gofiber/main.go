@@ -3,18 +3,23 @@ package main
 import (
 	"fmt"
 	_ "net/http"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	jwtware "github.com/gofiber/jwt/v2"
+	"github.com/golang-jwt/jwt"
 	_ "github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var db *sqlx.DB
+
+const jwtSecret = "45azg5udg4ar"
 
 func main() {
 
@@ -26,6 +31,17 @@ func main() {
 	}
 
 	app := fiber.New()
+
+	app.Use("/hello", jwtware.New(jwtware.Config{
+		SigningMethod: "HS256",
+		SigningKey:    []byte(jwtSecret),
+		SuccessHandler: func(c *fiber.Ctx) error {
+			return c.Next()
+		},
+		ErrorHandler: func(c *fiber.Ctx, e error) error {
+			return fiber.ErrUnauthorized
+		},
+	}))
 
 	app.Post("/signup", Signup)
 	app.Post("login", Login)
@@ -70,7 +86,43 @@ func Signup(c *fiber.Ctx) error {
 }
 
 func Login(c *fiber.Ctx) error {
-	return nil
+	
+	request := LoginRequest{}
+	err := c.BodyParser(&request)
+	if err != nil {
+		return err
+	}
+
+	if request.Username == "" || request.Password == "" {
+		return fiber.ErrUnprocessableEntity
+	}
+
+	user := User{}
+	query := "select id, username, password from user where username=?"
+	err = db.Get(&user, query, request.Username)
+	if err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Incorrect username or password")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
+	if err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Incorrect username or password")
+	}
+
+	claims := jwt.StandardClaims{
+		Issuer:    strconv.Itoa(user.Id),
+		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token, err := jwtToken.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return fiber.ErrInternalServerError
+	}
+
+	return c.JSON(fiber.Map{
+		"jwtToken": token,
+	})
 }
 
 func Hello(c *fiber.Ctx) error {
