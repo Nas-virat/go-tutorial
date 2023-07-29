@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
 )
 
@@ -42,6 +43,18 @@ func main() {
 	//GetGenders()
 	//GetGender(1)
 	//GetGenderbyName
+
+	//db.Migrator().CreateTable(Customer{})
+}
+
+func CreateCustomer(name string, genderID uint){
+	customer := Customer{Name: name,GenderID: genderID}
+	tx:= db.Create(&customer)
+	if tx.Error != nil {
+		fmt.Println(tx.Error)
+		return
+	}
+	fmt.Println(customer)
 }
 
 type Customer struct{
@@ -61,6 +74,19 @@ func CreateGender(name string) {
 		return
 	}
 	fmt.Println(gender)
+}
+
+func GetCustomers(){
+	customers := []Customer{}
+	//preload the field Gender
+	//tx := db.Preload("Gender").Find(&customers)
+	// Preload all field
+	tx := db.Preload(clause.Associations).Find(&customers)
+	if tx.Error != nil {
+		fmt.Println(tx.Error)
+		return
+	}
+	fmt.Println(customers)
 }
 
 func GetGenders() {
