@@ -1,3 +1,5 @@
+//go:build integration
+
 package handlers_test
 
 import (
@@ -13,6 +15,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
+
+//to run intergration test 
+// go test gotest/handlers -v -tags=integration
 
 func TestPromotionCalculateDiscountIntegrationService(t *testing.T) {
 
