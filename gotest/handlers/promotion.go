@@ -24,12 +24,14 @@ func (h promotionHandler) CalculateDiscount(c *fiber.Ctx) error{
 
 	amountStr := c.Query("amount")
 	amount, err := strconv.Atoi(amountStr)
-	if err != nil{
+	if err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
-	discount,err := h.promoService.CalculateDiscount(amount)
-	if err != nil{
+
+	discount, err := h.promoService.CalculateDiscount(amount)
+	if err != nil {
 		return c.SendStatus(fiber.StatusNotFound)
 	}
+
 	return c.SendString(strconv.Itoa(discount))
 }
