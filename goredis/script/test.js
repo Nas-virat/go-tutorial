@@ -1,5 +1,10 @@
 import http from 'k6/http'
 
+export let options = {
+    vus: 10,
+    duration:'5s',
+}
+
 export default function(){
     // without docker container use
     // run by k6 run ./script/test.js
