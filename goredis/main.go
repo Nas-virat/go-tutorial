@@ -1,12 +1,15 @@
 package main
 
 import (
-	"fmt"
+	_ "fmt"
+	"goredis/handlers"
 	"goredis/repositories"
+	"goredis/services"
 	_ "time"
 
 	"github.com/go-redis/redis/v8"
-	_ "github.com/gofiber/fiber/v2"
+
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -14,26 +17,18 @@ import (
 func main() {
 
 	db := initDatabase()
+	redisClient := initRedis()
 
 	productRepo := repositories.NewProductRepository(db)
-	products, err := productRepo.GetProduct()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	productService := services.NewCatalogServiceRedis(productRepo, redisClient)
+	productHandler := handlers.NewcatalogHandler(productService)
 
-	fmt.Println(products)
+	
 
-	/*
-		app := fiber.New()
+	app := fiber.New()
+	app.Get("/products",productHandler.GetProducts)
+	app.Listen(":8000")
 
-		app.Get("/hello", func(c *fiber.Ctx) error {
-			time.Sleep(time.Millisecond * 10)
-			return c.SendString("Hello World")
-		})
-
-		app.Listen(":8000")
-	*/
 }
 
 func initDatabase() *gorm.DB {
@@ -45,8 +40,8 @@ func initDatabase() *gorm.DB {
 	return db
 }
 
-func initRedis() {
+func initRedis() *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr:"localhost:6379",
+		Addr: "localhost:6379",
 	})
 }
