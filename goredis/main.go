@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"goredis/repositories"
-	"time"
+	_ "time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-redis/redis/v8"
+	_ "github.com/gofiber/fiber/v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -15,7 +16,7 @@ func main() {
 	db := initDatabase()
 
 	productRepo := repositories.NewProductRepository(db)
-	products,err := productRepo.GetProduct()
+	products, err := productRepo.GetProduct()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -24,14 +25,14 @@ func main() {
 	fmt.Println(products)
 
 	/*
-	app := fiber.New()
+		app := fiber.New()
 
-	app.Get("/hello", func(c *fiber.Ctx) error {
-		time.Sleep(time.Millisecond * 10)
-		return c.SendString("Hello World")
-	})
+		app.Get("/hello", func(c *fiber.Ctx) error {
+			time.Sleep(time.Millisecond * 10)
+			return c.SendString("Hello World")
+		})
 
-	app.Listen(":8000")
+		app.Listen(":8000")
 	*/
 }
 
@@ -42,4 +43,10 @@ func initDatabase() *gorm.DB {
 		panic(err)
 	}
 	return db
+}
+
+func initRedis() {
+	return redis.NewClient(&redis.Options{
+		Addr:"localhost:6379",
+	})
 }
