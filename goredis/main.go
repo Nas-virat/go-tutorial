@@ -20,8 +20,8 @@ func main() {
 	redisClient := initRedis()
 
 	productRepo := repositories.NewProductRepository(db)
-	productService := services.NewCatalogServiceRedis(productRepo, redisClient)
-	productHandler := handlers.NewcatalogHandler(productService)
+	productService := services.NewCatalogService(productRepo)
+	productHandler := handlers.NewCatalogHandlerRedis(productService,redisClient)
 
 	
 
