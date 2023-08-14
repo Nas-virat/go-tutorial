@@ -5,7 +5,9 @@ import (
 	"log"
 	"net"
 	"server/services"
+
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -17,7 +19,7 @@ func main() {
 	}
 
 	services.RegisterCalculatorServer(s,services.NewCalculatorServer())
- 
+	reflection.Register(s)
 
 	fmt.Println("gRPC server listening on port 50051")
 	err = s.Serve(listener)

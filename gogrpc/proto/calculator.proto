@@ -1,10 +1,14 @@
 syntax = "proto3";
 
+import "gender.proto";
+import "google/protobuf/timestamp.proto";
+
 package services;
 option go_package="./services";
 
 service Calculator{
-    rpc Hello(HelloRequest) returns(HelloResponse);
+    rpc Hello(HelloRequest) returns(HelloResponse); //unary
+    rpc Fibonacci(FibonacciRequest) returns(stream FibonacciResponse); //server steaming
 }
 
 
@@ -14,6 +18,7 @@ message HelloRequest{
     // reserved "name"
     string name = 1;
     string lname = 2;
+    google.protobuf.Timestamp created_at = 3;
 }
 
 
@@ -21,6 +26,14 @@ message HelloResponse{
     string result = 1;
 }
 
+
+message FibonacciRequest{
+    uint32 n = 1;
+}
+
+message FibonacciResponse{
+    uint32 result = 1;
+}
 
 message Person{
     string name = 1;
@@ -30,11 +43,8 @@ message Person{
     bool active = 5;
     repeated string phone_number = 6;
     Gender gender = 7;
+    map<string, string> address = 8;
+    google.protobuf.Timestamp created_at = 9;
 }
 
-enum Gender{
-    UNKNOW = 0;
-    MALE = 1;
-    FEMALE = 2;
-}
 
