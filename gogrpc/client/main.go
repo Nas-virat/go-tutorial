@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -24,8 +25,14 @@ func main() {
 	calculatorService := services.NewCalculatorServer(calculatorClient)
 
 	//err = calculatorService.Hello("Napas")
-	err = calculatorService.Fibonacci(5)
+	//err = calculatorService.Fibonacci(5)
+	//err = calculatorService.Average(1, 2, 3, 4, 5)
+	err = calculatorService.Sum(1, 2, 3, 4, 5)
 	if err != nil {
+		if grpcErr, ok := status.FromError(err); ok{
+			log.Printf("gRPC Error : %v", grpcErr.Message())
+			log.Printf("gRPC Error Code : %v", grpcErr.Code())
+		}
 		log.Fatal(err)
 	}
 
